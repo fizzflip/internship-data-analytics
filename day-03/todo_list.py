@@ -12,7 +12,7 @@ while True:
 
     if choice == 1:
         task = input("Enter Task: ")
-        task_list.append((priority, task))        
+        task_list.append(task)        
         print("Task Added")
     elif choice == 2:
         if len(task_list) == 0:
