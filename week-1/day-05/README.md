@@ -1,20 +1,21 @@
 ## Summary
 
-Day 5 of my Data Analytics internship focused on advancing my data visualization skills using Python's Matplotlib library. The primary goal was to explore different chart types and understand how to effectively communicate complex relationships and distributions within datasets using multiline charts, histograms, and scatter plots.
+Day 5 of the Data Analytics internship marked the introduction to data visualization using the `matplotlib.pyplot` library. The focus was on learning how to visually represent datasets through foundational charting techniques, including multiline graphs, histograms, scatter plots, and bubble charts.
 
 ## Key Learnings
 
-### Advanced Data Visualization
+### Data Visualization with Matplotlib
 
-* **Histograms:** Learned to visualize data frequency distributions by creating histograms. Explored customization using parameters like `bins` for granularity, along with `edgecolor` and `color` for improved readability.
-* **Multiline Plots:** Practiced plotting multiple data series on a single axis to enable direct comparisons. Utilized styling options such as `marker` types and `linestyle` variations to distinguish between datasets clearly.
-* **Scatter Plots:** Explored scatter plots to identify correlations between two continuous variables. Additionally, leveraged the size parameter (`s`) to introduce a third dimension of data into a 2D chart.
-* **Chart Aesthetics & Formatting:** Consistently applied labels (`xlabel`, `ylabel`), titles, legends, and grid lines across all chart types to ensure the visualizations are self-explanatory and professional.
+* **Line and Multi-line Charts:** Learned to plot continuous data using `plt.plot()`, differentiating multiple lines with distinct `label`, `marker`, and `linestyle` arguments.
+* **Histograms:** Explored data distributions using `plt.hist()`, adjusting the `bins` parameter and customizing the `color` and `edgecolor` for better readability.
+* **Scatter and Bubble Charts:** Utilized `plt.scatter()` to visualize relationships between two variables. Extended this to bubble charts by incorporating a third variable to dictate the size (`s`) of the data points, alongside transparency (`alpha`).
+* **Plot Customization:** Enhanced chart clarity by consistently adding x and y-axis labels (`plt.xlabel`, `plt.ylabel`), descriptive titles (`plt.title`), legends (`plt.legend`), and grid lines (`plt.grid`).
 
 ## Practical Application
 
-### Exploring Chart Types with Sample Data
+### Matplotlib Plotting Exercises
 
-* **Salary Distribution:** Created a histogram to analyze a sample salary dataset, adjusting the bins to accurately reflect the frequency distribution of different income brackets.
-* **Temperature Trends:** Built a multiline plot comparing the daily temperatures of three different cities over a week. Used distinct markers and line styles to easily differentiate the temperature trends for each location.
-* **Correlation Analysis:** Developed a basic scatter plot to examine the relationship between hours of study and marks obtained. Followed up with a more complex 3-dimensional scatter plot that visualized internet usage versus productivity score, where the size of each data point represented the associated stress level.
+* **Temperature Trend Multi-line Chart:** Created a multiline graph to compare the daily temperatures across three different cities, using distinct markers and line styles for clear visual separation.
+* **Salary and Sales Histograms:** Built histograms to analyze the frequency distribution of a set of employee salaries and sales data.
+* **Study vs. Marks Scatter Plot:** Developed a standard scatter plot to visualize the correlation between hours studied and marks obtained.
+* **Work Habits Bubble Chart:** Implemented a bubble chart to analyze the relationship between internet usage, productivity scores, and stress levels, where the bubble size effectively represented the magnitude of stress.
