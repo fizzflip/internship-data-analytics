@@ -12,7 +12,7 @@ while True:
 
     if choice == 1:
         task = input("Enter Task: ")
-        task_list.append(task)        
+        task_list.append(task)
         print("Task Added")
     elif choice == 2:
         if len(task_list) == 0:
@@ -26,7 +26,7 @@ while True:
         task = input("Enter Task Name: ")
         if task in task_list:
             task_list.remove(task)
-        else: 
+        else:
             print("Invalid Task Name!")
     elif choice == 4:
         print("Exiting the program")

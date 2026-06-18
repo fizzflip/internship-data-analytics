@@ -16,10 +16,10 @@ while True:
         priority = int(input("Enter Priority: "))
 
         task_list.append((priority, task))
-        task_list = sorted(task_list, key=lambda x : x[0])
-        
+        task_list = sorted(task_list, key=lambda x: x[0])
+
         print("Task Added!")
-    
+
     elif choice == 2:
         if len(task_list) == 0:
             task = input("No Tasks!")

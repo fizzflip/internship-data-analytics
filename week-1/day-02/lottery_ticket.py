@@ -1,4 +1,3 @@
-
 # FLOW OF PROGRAM
 #   - User inputs a lottery number
 #   - Program outputs if the user wins the lottery
