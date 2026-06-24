@@ -2,7 +2,7 @@ import pandas as pd
 
 # df = pd.read_excel('supermarket-sales-data.xlsx')
 
-df = pd.read_csv('student-data.csv')
+df = pd.read_csv("misc/datasets/student-data.csv")
 
 print("\n============ Head ============")
 print(df.head())
@@ -86,4 +86,4 @@ print("\n============ High-Low Percentage ============")
 print(df[df["Percentage"] == df["Percentage"].max()])
 print(df[df["Percentage"] == df["Percentage"].min()])
 
-df.to_csv('student-data-modified.csv', index=False)
+df.to_csv("student-data-modified.csv", index=False)
