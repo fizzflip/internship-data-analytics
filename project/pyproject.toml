@@ -1,0 +1,14 @@
+[project]
+name = "airlens-dashboard"
+version = "0.1.0"
+description = "AirLens: AQI Monitoring & Analytics Dashboard"
+authors = [
+    { name = "MrBot", email = "mrbot@example.com" }
+]
+dependencies = [
+    "streamlit",
+    "pandas",
+    "matplotlib",
+    "numpy"
+]
+requires-python = ">=3.10"
