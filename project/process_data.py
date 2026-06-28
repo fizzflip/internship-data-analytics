@@ -3,9 +3,17 @@ import streamlit as st
 
 @st.cache_data
 def load_data(file_path: str) -> pd.DataFrame:
-    """Loads the dataset and caches it to improve dashboard performance."""
+    """Loads the dataset, coordinates, and merges them to improve dashboard performance."""
     try:
         df = pd.read_csv(file_path)
+        
+        # Try to load and merge coordinates if they exist
+        import os
+        coords_path = "city_coordinates.csv"
+        if os.path.exists(coords_path):
+            coords_df = pd.read_csv(coords_path)
+            df = df.merge(coords_df, on=['City', 'Country'], how='left')
+            
         return df
     except Exception as e:
         st.error(f"Error loading dataset: {e}")

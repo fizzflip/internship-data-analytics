@@ -71,35 +71,35 @@ if page == "Global Map View":
         
     st.markdown("---")
     
-    # Create Country-level AQI aggregation for the map
-    country_aqi = filtered_df.groupby('Country')['AQI_Level'].mean().reset_index()
-    
-    # Create Plotly Choropleth map
-    fig_map = px.choropleth(
-        country_aqi,
-        locations="Country",
-        locationmode="country names",
-        color="AQI_Level",
-        hover_name="Country",
-        color_continuous_scale=px.colors.sequential.YlOrRd,
-        title="Global Average AQI Level by Country",
-        template="plotly_dark"
-    )
-    
-    # Update map layout for a sleek full-width presentation
-    fig_map.update_layout(
-        margin=dict(l=0, r=0, t=50, b=0),
-        geo=dict(
-            showframe=False,
-            showcoastlines=True,
-            projection_type='equirectangular',
-            bgcolor='rgba(0,0,0,0)'
-        ),
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)'
-    )
-    
-    st.plotly_chart(fig_map, use_container_width=True)
+    # Create City-level AQI aggregation for the heatmap
+    if 'Latitude' in filtered_df.columns and 'Longitude' in filtered_df.columns:
+        city_aqi = filtered_df.groupby(['City', 'Country', 'Latitude', 'Longitude'])['AQI_Level'].mean().reset_index()
+        
+        # Create Plotly Mapbox Density map (Heatmap)
+        fig_map = px.density_mapbox(
+            city_aqi,
+            lat='Latitude',
+            lon='Longitude',
+            z='AQI_Level',
+            radius=20,
+            hover_name='City',
+            hover_data={'Country': True, 'Latitude': False, 'Longitude': False, 'AQI_Level': ':.1f'},
+            color_continuous_scale=px.colors.sequential.YlOrRd,
+            title="Global City AQI Heatmap",
+            mapbox_style="carto-darkmatter",
+            zoom=1
+        )
+        
+        # Update map layout for a sleek full-width presentation
+        fig_map.update_layout(
+            margin=dict(l=0, r=0, t=50, b=0),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
+        )
+        
+        st.plotly_chart(fig_map, use_container_width=True)
+    else:
+        st.warning("Coordinates not yet loaded. Please wait for coordinates to be fetched.")
 
 elif page == "Analytics Dashboard":
     # --- Analytics Dashboard Page ---
