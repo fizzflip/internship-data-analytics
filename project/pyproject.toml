@@ -9,6 +9,7 @@ dependencies = [
     "streamlit",
     "pandas",
     "matplotlib",
-    "numpy"
+    "numpy",
+    "plotly",
 ]
 requires-python = ">=3.10"
