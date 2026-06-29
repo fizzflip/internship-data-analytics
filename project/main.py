@@ -1,9 +1,7 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import plotly.express as px
-import seaborn as sns
 import streamlit as st
+import visualizations as vis
 from process_data import get_filtered_data, get_kpis, load_data
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_option_menu import option_menu
@@ -16,14 +14,18 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Apply a sleek dark style to Matplotlib to blend with Streamlit's dark mode
-plt.style.use("dark_background")
+# The color definitions and matplotlib styling have been moved to visualizations.py
 
-# Set custom colors for plots to make them modern and vibrant
-COLORS = ["#00d2ff", "#3a7bd5", "#a020f0", "#ff4b4b", "#f9a826", "#32cd32"]
+
+def centered_caption(text):
+    st.markdown(
+        f"<p style='text-align: center; color: #888888; font-size: 0.85em; margin-top: -10px;'>{text}</p>",
+        unsafe_allow_html=True,
+    )
+
 
 # --- Data Loading ---
-DATASET_PATH = "air_quality_dataset.csv"  # Running from the project directory
+DATASET_PATH = "datasets/air_quality_dataset.csv"  # Running from the project directory
 df = load_data(DATASET_PATH)
 
 if df.empty:
@@ -31,10 +33,10 @@ if df.empty:
 
 # --- Sidebar Navigation ---
 with st.sidebar:
-    st.title("🌍 AirLens Navigation")
+    st.title("Airlens")
     page = option_menu(
         menu_title=None,
-        options=["Global Map View", "Analytics Dashboard"],
+        options=["Map View", "Analytics Dashboard"],
         icons=["globe-americas", "bar-chart-line"],
         menu_icon="cast",
         default_index=0,
@@ -75,10 +77,14 @@ filtered_df = get_filtered_data(df, selected_country, selected_year)
 # --- KPIs ---
 avg_aqi, worst_city, most_common_source = get_kpis(filtered_df)
 
-if page == "Global Map View":
+if page == "Map View":
     # --- Global Map View Page ---
-    st.title(f"AirLens: {'Global' if selected_country == 'Global' else selected_country} AQI Heatmap")
-    st.markdown(f"A geographic overview of Air Quality Indices {'around the world' if selected_country == 'Global' else 'in ' + selected_country}.")
+    st.title(
+        f"{'Global' if selected_country == 'Global' else selected_country} AQI Heatmap"
+    )
+    st.markdown(
+        f"A geographic overview of Air Quality Indices {'around the world' if selected_country == 'Global' else 'in ' + selected_country}."
+    )
 
     if filtered_df.empty:
         st.warning("No data available for the selected filters.")
@@ -86,9 +92,7 @@ if page == "Global Map View":
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric(
-            label=f"{'Global ' if selected_country == 'Global' else ''}Average AQI", value=f"{avg_aqi:.1f}" if avg_aqi else "N/A"
-        )
+        st.metric(label=f"Average AQI", value=f"{avg_aqi:.1f}" if avg_aqi else "N/A")
     with col2:
         st.metric(label="Most Polluted City", value=worst_city)
     with col3:
@@ -102,7 +106,7 @@ if page == "Global Map View":
         border_left_color="#00d2ff",
     )
 
-    st.markdown("---")
+    st.divider()
 
     # Create City-level AQI aggregation for the heatmap
     if "Latitude" in filtered_df.columns and "Longitude" in filtered_df.columns:
@@ -129,7 +133,7 @@ if page == "Global Map View":
                 "AQI_Level": ":.1f",
             },
             color_continuous_scale=px.colors.sequential.YlOrRd,
-            title=f"{'Global' if selected_country == 'Global' else selected_country} City AQI Heatmap",
+            title=f"{'Global' if selected_country == 'Global' else selected_country} AQI Heatmap",
             map_style="carto-darkmatter",
             zoom=1,
         )
@@ -149,310 +153,104 @@ if page == "Global Map View":
 
 elif page == "Analytics Dashboard":
     # --- Analytics Dashboard Page ---
-    st.title(f"AirLens: {'Global' if selected_country == 'Global' else selected_country} Detailed Analytics")
+    st.title(
+        f"{'Global' if selected_country == 'Global' else selected_country} Detailed Analytics"
+    )
     st.markdown("Analyze specific pollutant trends and environmental conditions.")
 
     if filtered_df.empty:
         st.warning("No data available for the selected filters.")
         st.stop()
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric(
-            label="Average AQI Level", value=f"{avg_aqi:.1f}" if avg_aqi else "N/A"
-        )
-    with col2:
-        st.metric(label="Most Polluted City", value=worst_city)
-    with col3:
-        st.metric(label="Dominant Pollution Source", value=most_common_source)
+    # --- Tabbed Layout ---
+    tab1, tab2, tab3 = st.tabs(["Overview", "Deep Dive", "Correlations & Trends"])
 
-    style_metric_cards(
-        background_color="#1e1e1e",
-        border_size_px=1,
-        border_color="#333333",
-        border_radius_px=10,
-        border_left_color="#00d2ff",
-    )
+    with tab1:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric(
+                label="Average AQI Level", value=f"{avg_aqi:.1f}" if avg_aqi else "N/A"
+            )
+        with col2:
+            st.metric(label="Most Polluted City", value=worst_city)
+        with col3:
+            st.metric(label="Dominant Pollution Source", value=most_common_source)
 
-    st.markdown("---")
-
-    # Helper function to remove borders from matplotlib charts for a cleaner look
-    def style_axes(ax):
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-        ax.grid(color="#333333", linestyle="--", linewidth=0.5, alpha=0.5)
-
-    col_chart1, col_chart2 = st.columns(2)
-
-    with col_chart1:
-        st.subheader(f"Top 10 Cities by AQI {'Globally' if selected_country == 'Global' else 'in ' + selected_country}")
-
-        # Sort cities by AQI
-        top_cities = (
-            filtered_df.groupby("City")["AQI_Level"]
-            .mean()
-            .sort_values(ascending=False)
-            .head(10)
+        style_metric_cards(
+            background_color="#1e1e1e",
+            border_size_px=1,
+            border_color="#333333",
+            border_radius_px=10,
+            border_left_color="#00d2ff",
         )
 
-        fig, ax = plt.subplots(figsize=(8, 5))
-        bars = ax.barh(
-            top_cities.index[::-1],
-            top_cities.values[::-1],
-            color=COLORS[0],
-            edgecolor="none",
-        )
-        ax.set_xlabel("Average AQI")
-        style_axes(ax)
+        st.divider()
+        col_chart1, col_chart2 = st.columns(2)
 
-        # Remove y-axis ticks for a cleaner look
-        ax.tick_params(axis="y", length=0)
-
-        st.pyplot(fig, transparent=True)
-
-    with col_chart2:
-        st.subheader(f"Distribution of Pollution Sources {'Globally' if selected_country == 'Global' else 'in ' + selected_country}")
-
-        source_counts = filtered_df["Pollution_Source"].value_counts()
-
-        fig, ax = plt.subplots(figsize=(8, 5))
-        ax.bar(
-            source_counts.index, source_counts.values, color=COLORS[4], edgecolor="none"
-        )
-        ax.set_ylabel("Count")
-        plt.xticks(rotation=45, ha="right")
-        style_axes(ax)
-
-        st.pyplot(fig, transparent=True)
-
-    st.markdown("---")
-    st.subheader(f"Pollutant Averages {'Globally' if selected_country == 'Global' else 'in ' + selected_country} (PM2.5, PM10, NO2, CO)")
-
-    # Calculate averages for pollutants
-    pollutants = ["PM2_5", "PM10", "NO2", "CO_Level"]
-    clean_pollutant_names = ["PM2.5", "PM10", "NO2", "CO"]
-    avg_pollutants = filtered_df[pollutants].mean()
-
-    fig, ax = plt.subplots(figsize=(10, 4))
-    bars = ax.bar(
-        clean_pollutant_names,
-        avg_pollutants.values,
-        color=COLORS[1],
-        width=0.5,
-        edgecolor="none",
-    )
-
-    # Add data labels
-    for bar in bars:
-        yval = bar.get_height()
-        ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            yval + 1,
-            round(yval, 1),
-            ha="center",
-            va="bottom",
-            color="white",
-        )
-
-    ax.set_ylabel("Average Level")
-    style_axes(ax)
-    st.pyplot(fig, transparent=True)
-
-    # Trend over years (only makes sense if "All Years" is selected)
-    if selected_year == "All Years":
-        st.markdown("---")
-        st.subheader("Pollutant Trends Over the Years")
-
-        trend_df = filtered_df.groupby("Year")[pollutants].mean()
-
-        fig, ax = plt.subplots(figsize=(10, 5))
-        for i, pol in enumerate(pollutants):
-            ax.plot(
-                trend_df.index,
-                trend_df[pol],
-                marker="o",
-                label=clean_pollutant_names[i],
-                linewidth=2,
-                color=["#ff4b4b", "#00d2ff", "#f9a826", "#a020f0"][i],
+        with col_chart1:
+            fig1 = vis.plot_top_cities(filtered_df, selected_country)
+            st.pyplot(fig1, transparent=True)
+            centered_caption(
+                f"Top 10 Cities by AQI {'Globally' if selected_country == 'Global' else 'in ' + selected_country}"
             )
 
-        ax.set_xlabel("Year")
-        ax.set_ylabel("Average Level")
-
-        # Ensure x-axis ticks are integers
-        ax.set_xticks(trend_df.index)
-
-        ax.legend(frameon=False, loc="upper right")
-        style_axes(ax)
-        st.pyplot(fig, transparent=True)
-
-    st.markdown("---")
-    st.subheader("Advanced Data Analysis")
-
-    col_chart3, col_chart4 = st.columns(2)
-
-    with col_chart3:
-        st.markdown("**Air Quality Status Breakdown**")
-        status_counts = filtered_df["Air_Quality_Status"].value_counts()
-        
-        fig, ax = plt.subplots(figsize=(6, 6))
-        status_colors_map = {
-            "Good": "#32cd32",        # Green
-            "Moderate": "#f9a826",    # Yellow/Orange
-            "Poor": "#ff7f50",        # Coral/Orange-Red
-            "Very Poor": "#ff4b4b",   # Red
-            "Hazardous": "#a020f0",   # Purple
-        }
-        
-        # Default to a random color from COLORS if the status isn't in the map
-        donut_colors = [status_colors_map.get(status, COLORS[i % len(COLORS)]) for i, status in enumerate(status_counts.index)]
-        
-        # Use a donut chart
-        wedges, texts, autotexts = ax.pie(
-            status_counts.values, 
-            labels=status_counts.index, 
-            autopct='%1.1f%%',
-            startangle=90,
-            colors=donut_colors,
-            textprops=dict(color="w")
-        )
-        
-        # Draw white circle in the middle
-        centre_circle = plt.Circle((0,0),0.70,fc='#1e1e1e')
-        fig.gca().add_artist(centre_circle)
-        ax.axis('equal')  
-        st.pyplot(fig, transparent=True)
-
-    with col_chart4:
-        st.markdown("**Pollutant Composition by Source**")
-        # Stacked bar chart showing average pollutants for each source
-        source_pollutants = filtered_df.groupby("Pollution_Source")[pollutants].mean()
-        
-        fig, ax = plt.subplots(figsize=(8, 6))
-        
-        bottom = np.zeros(len(source_pollutants))
-        for i, col in enumerate(pollutants):
-            ax.bar(
-                source_pollutants.index, 
-                source_pollutants[col], 
-                bottom=bottom, 
-                label=clean_pollutant_names[i],
-                color=COLORS[i % len(COLORS)],
-                edgecolor="none"
+        with col_chart2:
+            fig2 = vis.plot_pollution_sources(filtered_df)
+            st.pyplot(fig2, transparent=True)
+            centered_caption(
+                f"Distribution of Pollution Sources {'Globally' if selected_country == 'Global' else 'in ' + selected_country}"
             )
-            bottom += source_pollutants[col].values
-            
-        ax.set_ylabel("Average Concentration")
-        plt.xticks(rotation=45, ha="right")
-        ax.legend(frameon=False, bbox_to_anchor=(1.05, 1), loc='upper left')
-        style_axes(ax)
-        st.pyplot(fig, transparent=True)
 
-    st.markdown("---")
-    st.subheader("Pollutant Correlation Analysis")
-    st.markdown("Discover which pollutants are driving the AQI levels the hardest.")
-
-    # Correlation Heatmap
-    corr_cols = ["AQI_Level"] + pollutants
-    corr_matrix = filtered_df[corr_cols].corr()
-    
-    # Rename index and columns for cleaner display
-    clean_corr_names = ["AQI"] + clean_pollutant_names
-    corr_matrix.index = clean_corr_names
-    corr_matrix.columns = clean_corr_names
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-    
-    # Custom dark heatmap using seaborn
-    sns.heatmap(
-        corr_matrix, 
-        annot=True, 
-        cmap="coolwarm", 
-        fmt=".2f", 
-        linewidths=.5, 
-        cbar_kws={"shrink": .8},
-        ax=ax,
-        linecolor="#1e1e1e"
-    )
-    
-    # Tweak text colors for dark mode readability
-    ax.tick_params(colors='white')
-    st.pyplot(fig, transparent=True)
-    
-    st.markdown("---")
-    st.subheader("Deep Dive Analytics")
-    st.markdown("Explore data distributions, regional variances, and particle-size clusters.")
-
-    # 1. AQI Variance (Boxplot) - Full Width
-    if selected_country == "Global":
-        st.markdown("**AQI Variance Across Top Countries**")
-        # Get top 10 countries by record count
-        top_groups = filtered_df['Country'].value_counts().nlargest(10).index
-        box_df = filtered_df[filtered_df['Country'].isin(top_groups)]
-        x_col = 'Country'
-    else:
-        st.markdown(f"**AQI Variance Across Top Cities in {selected_country}**")
-        # Get top 10 cities by record count in that country
-        top_groups = filtered_df['City'].value_counts().nlargest(10).index
-        box_df = filtered_df[filtered_df['City'].isin(top_groups)]
-        x_col = 'City'
-    
-    fig, ax = plt.subplots(figsize=(12, 5))
-    sns.boxplot(
-        data=box_df, 
-        x=x_col, 
-        y='AQI_Level', 
-        palette=COLORS,
-        ax=ax,
-        flierprops={"marker": "x", "markeredgecolor": "#ff4b4b"}
-    )
-    
-    ax.set_ylabel("AQI Level")
-    ax.set_xlabel("")
-    plt.xticks(rotation=45, ha="right")
-    style_axes(ax)
-    st.pyplot(fig, transparent=True)
-    
-    col_chart5, col_chart6 = st.columns(2)
-    
-    with col_chart5:
-        # 2. Global AQI Distribution Profile (Histogram + KDE)
-        st.markdown(f"**{'Global' if selected_country == 'Global' else selected_country} AQI Distribution Profile**")
-        fig, ax = plt.subplots(figsize=(8, 6))
-        
-        sns.histplot(
-            data=filtered_df,
-            x='AQI_Level',
-            kde=True,
-            color=COLORS[0],
-            edgecolor="none",
-            ax=ax
+        st.divider()
+        fig3 = vis.plot_pollutant_averages(filtered_df)
+        st.pyplot(fig3, transparent=True)
+        centered_caption(
+            f"Pollutant Averages {'Globally' if selected_country == 'Global' else 'in ' + selected_country} (PM2.5, PM10, NO2, CO)"
         )
-        
-        ax.set_xlabel("AQI Level")
-        ax.set_ylabel("Frequency")
-        style_axes(ax)
-        st.pyplot(fig, transparent=True)
 
-    with col_chart6:
-        # 3. Particle Size Cluster Analysis (Scatter Plot)
-        st.markdown("**Particle Size Cluster Analysis (PM2.5 vs PM10)**")
-        fig, ax = plt.subplots(figsize=(8, 6))
-        
-        sns.scatterplot(
-            data=filtered_df,
-            x='PM2_5',
-            y='PM10',
-            hue='Pollution_Source',
-            palette="husl",
-            s=60,
-            alpha=0.7,
-            ax=ax,
-            edgecolor="none"
-        )
-        
-        ax.set_xlabel("PM2.5 Level")
-        ax.set_ylabel("PM10 Level")
-        ax.legend(frameon=False, bbox_to_anchor=(1.05, 1), loc='upper left')
-        style_axes(ax)
-        st.pyplot(fig, transparent=True)
+    with tab2:
+        col_chart3, col_chart4 = st.columns(2)
+        with col_chart3:
+            fig6 = vis.plot_particle_clusters(filtered_df)
+            st.pyplot(fig6, transparent=True)
+            centered_caption("Particle Size Cluster Analysis (PM2.5 vs PM10)")
+
+        with col_chart4:
+            fig5 = vis.plot_aqi_distribution(filtered_df)
+            st.pyplot(fig5, transparent=True)
+            centered_caption(
+                f"{'Global' if selected_country == 'Global' else selected_country} AQI Distribution Profile"
+            )
+
+        st.divider()
+        fig4 = vis.plot_aqi_variance(filtered_df, selected_country)
+        st.pyplot(fig4, transparent=True)
+        if selected_country == "Global":
+            centered_caption("AQI Variance Across Top Countries")
+        else:
+            centered_caption(f"AQI Variance Across Top Cities in {selected_country}")
+
+        st.divider()
+        fig7 = vis.plot_source_composition(filtered_df)
+        st.pyplot(fig7, transparent=True)
+        centered_caption("Pollutant Composition by Source")
+
+    with tab3:
+        col_chart5, col_chart6 = st.columns(2)
+
+        with col_chart5:
+            fig8 = vis.plot_status_breakdown(filtered_df)
+            st.pyplot(fig8, transparent=True)
+            centered_caption("Air Quality Status Breakdown")
+
+        with col_chart6:
+            fig9 = vis.plot_correlation_heatmap(filtered_df)
+            st.pyplot(fig9, transparent=True)
+            centered_caption("Pollutant Correlation Analysis")
+
+        # Trend over years (only makes sense if "All Years" is selected)
+        if selected_year == "All Years":
+            st.divider()
+            fig10 = vis.plot_pollutant_trends(filtered_df)
+            st.pyplot(fig10, transparent=True)
+            centered_caption("Pollutant Trends Over the Years")
