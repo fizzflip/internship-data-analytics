@@ -128,9 +128,15 @@ def plot_status_breakdown(filtered_df):
 
 def plot_source_composition(filtered_df):
     source_pollutants = filtered_df.groupby("Pollution_Source")[POLLUTANTS].mean()
+
+    # Sort pollutants by global mean (highest to lowest) so the largest is at the bottom
+    global_means = filtered_df[POLLUTANTS].mean().sort_values(ascending=False)
+    sorted_pollutants = global_means.index.tolist()
+
     fig, ax = plt.subplots(figsize=(8, 6))
     bottom = np.zeros(len(source_pollutants))
-    for i, col in enumerate(POLLUTANTS):
+    for col in sorted_pollutants:
+        i = POLLUTANTS.index(col)
         ax.bar(
             source_pollutants.index,
             source_pollutants[col],
@@ -234,7 +240,7 @@ def plot_particle_clusters(filtered_df):
     )
     ax.set_xlabel("PM2.5 Level")
     ax.set_ylabel("PM10 Level")
-    ax.legend(frameon=False, bbox_to_anchor=(1.05, 1), loc="upper left")
+    ax.legend(frameon=False, loc="best")
     style_axes(ax)
     fig.tight_layout()
     return fig

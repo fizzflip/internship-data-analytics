@@ -236,6 +236,13 @@ elif page == "Analytics Dashboard":
         centered_caption("Pollutant Composition by Source")
 
     with tab3:
+        # Trend over years (only makes sense if "All Years" is selected)
+        if selected_year == "All Years":
+            fig10 = vis.plot_pollutant_trends(filtered_df)
+            st.pyplot(fig10, transparent=True)
+            centered_caption("Pollutant Trends Over the Years")
+            st.divider()
+
         col_chart5, col_chart6 = st.columns(2)
 
         with col_chart5:
@@ -247,10 +254,3 @@ elif page == "Analytics Dashboard":
             fig9 = vis.plot_correlation_heatmap(filtered_df)
             st.pyplot(fig9, transparent=True)
             centered_caption("Pollutant Correlation Analysis")
-
-        # Trend over years (only makes sense if "All Years" is selected)
-        if selected_year == "All Years":
-            st.divider()
-            fig10 = vis.plot_pollutant_trends(filtered_df)
-            st.pyplot(fig10, transparent=True)
-            centered_caption("Pollutant Trends Over the Years")
